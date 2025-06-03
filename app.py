@@ -1,27 +1,49 @@
-# streamlit_app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Load data
-df = pd.read_csv('airline_customer_satisfaction.csv')
+st.set_page_config(page_title="Aviation Dashboard", layout="wide")
 
-# Title
-st.title("Airline Customer Satisfaction Dashboard")
+# Sidebar selection with user-friendly labels
+dataset_name = st.sidebar.selectbox(
+    "Choose a dataset",
+    (
+        "Airline Dataset (Updated v2)",
+        "Aircraft Data",
+        "Airline Customer Satisfaction",
+        "Airlines Reference Table",
+        "Synthetic Flight Passenger Data"
+    )
+)
 
-# Filter
-travel_type = st.selectbox("Select Travel Type", df['Type of Travel'].unique())
-filtered_df = df[df['Type of Travel'] == travel_type]
+# Load selected dataset
+@st.cache_data
+def load_data(name):
+    if name == "Airline Dataset (Updated v2)":
+        return pd.read_csv("datasets/Airline Dataset Updated - v2.csv")
+    elif name == "Aircraft Data":
+        return pd.read_csv("datasets/aircraft_data.csv")
+    elif name == "Airline Customer Satisfaction":
+        return pd.read_csv("datasets/airline_customer_satisfaction.csv")
+    elif name == "Airlines Reference Table":
+        return pd.read_csv("datasets/airlines.csv")
+    elif name == "Synthetic Flight Passenger Data":
+        return pd.read_csv("datasets/synthetic_flight_passenger_data.csv")
 
-# Pie chart
-st.subheader("Satisfaction Distribution")
-fig1 = px.pie(filtered_df, names='satisfaction')
-st.plotly_chart(fig1)
+# Load and display the selected dataset
+df = load_data(dataset_name)
 
-# Bar chart
-st.subheader("Average Ratings by Feature")
-feature_cols = ['Inflight wifi service', 'Food and drink', 'Seat comfort']
-mean_ratings = filtered_df[feature_cols].mean().reset_index()
-mean_ratings.columns = ['Feature', 'Average Rating']
-fig2 = px.bar(mean_ratings, x='Feature', y='Average Rating', color='Feature')
-st.plotly_chart(fig2)
+st.title(f"{dataset_name}")
+st.dataframe(df)
+
+# Optional quick chart preview if relevant columns exist
+if "satisfaction" in df.columns:
+    fig = px.histogram(df, x="satisfaction", color="Class", barmode="group")
+    st.plotly_chart(fig, use_container_width=True)
+elif "airline" in df.columns:
+    fig = px.histogram(df, x="airline")
+    st.plotly_chart(fig, use_container_width=True)
+elif "passenger_id" in df.columns and "flight_date" in df.columns:
+    df['flight_date'] = pd.to_datetime(df['flight_date'])
+    fig = px.histogram(df, x="flight_date")
+    st.plotly_chart(fig, use_container_width=True)
