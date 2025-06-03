@@ -20,7 +20,7 @@ dataset_name = st.sidebar.selectbox(
 @st.cache_data
 def load_data(name):
     if name == "Airline Dataset (Updated v2)":
-        return pd.read_csv("datasets/Airline Dataset Updated - v2.csv")
+        return pd.read_csv("datasets/Airline_Dataset_Updated_-_v2.csv")
     elif name == "Aircraft Data":
         return pd.read_csv("datasets/aircraft_data.csv")
     elif name == "Airline Customer Satisfaction":
